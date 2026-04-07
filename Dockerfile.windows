@@ -1,0 +1,17 @@
+# Windows container for .NET 9 with IBM iSeries Access ODBC Driver
+FROM mcr.microsoft.com/dotnet/runtime:9.0-windowsservercore-ltsc2022
+
+WORKDIR /app
+
+# Copy published output
+COPY --from=build /src/publish .
+
+# Copy IBM ACS installer (download from IBM portal first)
+# https://www.ibm.com/support/pages/ibm-i-access-client-solutions
+COPY IBMiAccess_v1r1.exe C:/tmp/
+
+# Silent install
+RUN C:/tmp/IBMiAccess_v1r1.exe /s /v"/qn"
+
+ENV DOTNET_ENVIRONMENT=Production
+ENTRYPOINT ["dotnet", "db2Connection.dll"]
