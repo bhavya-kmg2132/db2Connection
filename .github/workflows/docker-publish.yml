@@ -9,7 +9,6 @@ env:
   IMAGE_NAME: db2connection
   DOCKER_REGISTRY_HOST: ${{ secrets.DOCKER_REGISTRY_HOST }}
   DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
-  WINDOWS_SELF_HOSTED: ${{ secrets.WINDOWS_SELF_HOSTED }}
 
 jobs:
   build-and-push-linux:
@@ -43,7 +42,7 @@ jobs:
   build-and-push-windows:
     name: Build & Push Windows image (self-hosted)
     runs-on: [ self-hosted, windows, x64 ]
-    if: ${{ env.WINDOWS_SELF_HOSTED == 'true' }}
+    # no 'if' here — job will only execute if a matching self-hosted runner is available
     steps:
       - name: Checkout
         uses: actions/checkout@v4
