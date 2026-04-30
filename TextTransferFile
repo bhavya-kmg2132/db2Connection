@@ -1,60 +1,28 @@
- private Policy? MapPolicyInfoResponseToPolicy(string responseJson)
+ private List<Policy> MapApiResponseToPolicies(string responseJson)
     {
-        if (string.IsNullOrWhiteSpace(responseJson))
+        var apiResponse = JsonSerializer.Deserialize<PolicyApiResponse>(responseJson, _jsonOptions);
+        var policies = new List<Policy>();
+        if (apiResponse?.Result == null) return policies;
+
+        foreach (var item in apiResponse.Result)
         {
-            _logger.LogWarning("Empty response received for policy lookup");
-            return null;
-        }
-
-        try
-        {
-            var options = new JsonSerializerOptions
+            policies.Add(new Policy
             {
-                PropertyNameCaseInsensitive = true
-            };
-
-            var apiResponse = JsonSerializer.Deserialize<PolicyInfoResponse>(responseJson, options);
-            var policyDto = apiResponse?.Result?.FirstOrDefault();
-
-            if (policyDto == null)
-            {
-                _logger.LogWarning("No policy found in response");
-                return null;
-            }
-
-            // Map nested objects to Policy entity
-            var policy = new Policy
-            {
-                //InsuredName = policyDto. ?? string.Empty,
-                PolicyId = Convert.ToString(policyDto?.PolicyId),
-                PolicyNo = policyDto.PolicyNumber,
-                EffectiveDate = ParseDateTime(policyDto.Term?.EffectiveDate),
-                ExpirationDate = ParseDateTime(policyDto.Term?.ExpirationDate),
-                // Map CONTACT info
-                PhoneNumber = policyDto.Contact?.Phones?.FirstOrDefault()?.PhoneNumber,
-                Telephone = policyDto.Contact?.Phones?.FirstOrDefault()?.PhoneNumber,
-                Email = policyDto.Contact?.Email ?? string.Empty,
-                // Map address to individual fields
-                Address1 = policyDto.Contact?.MailingAddress?.Address1,
-                Address2 = policyDto.Contact?.MailingAddress?.Address2,
-                City = policyDto.Contact?.MailingAddress?.City,
-                Zip = policyDto.Contact?.MailingAddress?.ZipCode,
-                // Map VEHICLES (comma-separated for single field)
-                VehicleInfo = MapVehicles(policyDto.Vehicles),
-                // Map DRIVERS (comma-separated for single field)
-                DriverInfo = MapDrivers(policyDto.Drivers),
-                // Map RATING
-                TotalPremium = ParseDecimal(policyDto.Rating?.TotalPremium),
-                WrittenPremium = ParseDecimal(policyDto.Rating?.TotalPremium),
-                // PolicyFee doesn't exist in entity - could add as custom field if needed
-            };
-
-            _logger.LogInformation("Successfully mapped policy {PolicyNumber}", policy.PolicyNo);
-            return policy;
+                QuoteId = item..ToString(),
+                PolicyId = item.POLICYNUMBER?.Trim() ?? string.Empty,
+                PolicyNo = item.POLICYNUMBER?.Trim(),
+                InsuredName = item.INSUREDNAME?.Trim() ?? string.Empty,
+                LineOfBusiness = item.LINEOFBUSINESS?.Trim(),
+                EffectiveDate = ParseApiDate(item.EFFECTIVEDATE),
+                ExpirationDate = ParseApiDate(item.EXPIRATIONDATE),
+                Status = item.STATUS?.Trim(),
+                TotalPremium = item.PREMIUM,
+                AgentCode = item.AGENTCODE?.Trim(),
+                TransactionDate = ParseApiDate(item.TRANSDATE),
+                EndorseDate = ParseApiDate(item.ENDORSEDATE),
+                TransactionType = item.TRANSACTIONTYPE?.Trim(),
+                HeldBy = item.HELDBY?.Trim()
+            });
         }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "Failed to deserialize policy response");
-            return null;
-        }
+        return policies;
     }
