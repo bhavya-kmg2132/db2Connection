@@ -5,6 +5,7 @@ using MCAQuincyApi.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -31,19 +32,18 @@ public class PolicyService : IPolicyService
             ?? throw new InvalidOperationException("Missing ExternalApi:BaseUrl configuration.");
     }
 
+    // ──────────────────────────────────────────────────────────────
+    //  Public API methods
+    // ──────────────────────────────────────────────────────────────
+
     /// <inheritdoc />
     public async Task<IEnumerable<Policy>> GetPolicyQuotesAsync(string? searchkey)
     {
         _logger.LogInformation(
-            "Calling external API: POST {BaseUrl}/quotes. SearchKey={SearchKey}", 
-           "_baseUrl", searchkey);
+            "Calling external API: POST {BaseUrl}/GetQuotes. SearchKey={SearchKey}",
+            _baseUrl, searchkey);
 
-        var requestBody = new
-        {
-            searchkey = searchkey ,
-           
-        };
-
+        var requestBody = new { searchkey };
         var json = JsonSerializer.Serialize(requestBody);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -52,8 +52,7 @@ public class PolicyService : IPolicyService
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             _logger.LogWarning(
-                "External API returned 404 for POST /quotes. SearchKey={SearchKey}",
-                searchkey);
+                "External API returned 404 for POST /GetQuotes. SearchKey={SearchKey}", searchkey);
             return new List<Policy>();
         }
 
@@ -61,9 +60,9 @@ public class PolicyService : IPolicyService
         {
             var errorBody = await response.Content.ReadAsStringAsync();
             _logger.LogError(
-                "External API returned {StatusCode} for POST /quotes. Response: {ErrorBody}",
+                "External API returned {StatusCode} for POST /GetQuotes. Response: {ErrorBody}",
                 (int)response.StatusCode, errorBody);
-            response.EnsureSuccessStatusCode(); // will throw with status code details
+            response.EnsureSuccessStatusCode();
         }
 
         var responseBody = await response.Content.ReadAsStringAsync();
@@ -74,11 +73,11 @@ public class PolicyService : IPolicyService
     public async Task<Policy?> GetPolicyByNumberAsync(string policyNumber)
     {
         _logger.LogInformation(
-            "Calling external API: GET {BaseUrl}/{PolicyNumber}", _baseUrl, policyNumber);
-//http://127.0.0.1:8080/QuotesPolicyInfo/{PolicyId}?policyid=AFV%20209395
+            "Calling external API: GET {BaseUrl}QuotesPolicyInfo. PolicyNumber={PolicyNumber}",
+            _baseUrl, policyNumber);
 
         var response = await _httpClient.GetAsync(
-    $"{_baseUrl}QuotesPolicyInfo/{{PolicyId}}?policyid={policyNumber}");
+            $"{_baseUrl}QuotesPolicyInfo/{{PolicyId}}?policyid={Uri.EscapeDataString(policyNumber)}");
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
@@ -89,8 +88,7 @@ public class PolicyService : IPolicyService
         response.EnsureSuccessStatusCode();
 
         var responseBody = await response.Content.ReadAsStringAsync();
-        var policy = MapPolicyInfoResponseToPolicy(responseBody);
-        return policy;
+        return MapPolicyInfoResponseToPolicy(responseBody);
     }
 
     /// <inheritdoc />
@@ -100,16 +98,11 @@ public class PolicyService : IPolicyService
             "Calling external API: POST {BaseUrl}/SavePolicyInfo. PolicyNumber={PolicyNumber}",
             _baseUrl, policyNumber);
 
-        var requestBody = new
-        {
-            telephone,
-            policyNumber
-        };
-
+        var requestBody = new { telephone, policyNumber };
         var json = JsonSerializer.Serialize(requestBody);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.PostAsync($"{_baseUrl}/SavePolicyInfo", content);
+        var response = await _httpClient.PostAsync($"{_baseUrl}SavePolicyInfo", content);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -121,12 +114,12 @@ public class PolicyService : IPolicyService
         }
 
         var responseBody = await response.Content.ReadAsStringAsync();
-        var policies = MapApiResponseToPolicies(responseBody);
-        using var enumerator = policies.GetEnumerator();
-        return enumerator.MoveNext() ? enumerator.Current : null;
+        return MapApiResponseToPolicies(responseBody).FirstOrDefault();
     }
 
-    // ── Response mapping (same logic as Db2Repository.FetchPoliciesFromApiAsync) ──
+    // ──────────────────────────────────────────────────────────────
+    //  Mapping — flat list response (GetQuotes / UpdatePhone)
+    // ──────────────────────────────────────────────────────────────
 
     private List<Policy> MapApiResponseToPolicies(string responseJson)
     {
@@ -136,189 +129,70 @@ public class PolicyService : IPolicyService
 
         foreach (var item in apiResponse.Result)
         {
+            var primaryPhone = item.Contact?.Phones?.FirstOrDefault();
+            var mailingAddress = item.Contact?.MailingAddress;
+
             policies.Add(new Policy
             {
-                QuoteId = item.QUOTEID.ToString(),
-                PolicyId = item.POLICYNUMBER?.Trim() ?? string.Empty,
-                PolicyNo = item.POLICYNUMBER?.Trim(),
-                InsuredName = item.INSUREDNAME?.Trim() ?? string.Empty,
-                LineOfBusiness = item.LINEOFBUSINESS?.Trim(),
-                EffectiveDate = ParseApiDate(item.EFFECTIVEDATE),
-                ExpirationDate = ParseApiDate(item.EXPIRATIONDATE),
-                Status = item.STATUS?.Trim(),
-                TotalPremium = item.PREMIUM,
-                AgentCode = item.AGENTCODE?.Trim(),
-                TransactionDate = ParseApiDate(item.TRANSDATE),
-                EndorseDate = ParseApiDate(item.ENDORSEDATE),
-                TransactionType = item.TRANSACTIONTYPE?.Trim(),
-                HeldBy = item.HELDBY?.Trim()
+                // ── Identity ──
+                PolicyId          = Convert.ToString(item.PolicyId) ?? string.Empty,
+                PolicyIdOriginal  = Convert.ToString(item.PolicyId),
+                PolicyNo          = item.PolicyNumber?.Trim(),
+                QuoteNumber       = item.QuoteNumber?.Trim(),
+                TransactionCode   = item.TransactionCode?.Trim(),
+                ProductCode       = item.ProductCode?.Trim(),
+                Status            = item.Status?.Trim(),
+
+                // ── Insured ──
+                InsuredName       = item.Insured?.NamedInsured?.Trim() ?? string.Empty,
+                BusinessType      = item.Insured?.BusinessType?.Trim(),
+                LicenseNumber     = item.Insured?.LicenseNumber?.Trim(),
+                InsuredContactName = item.Insured?.NamedInsured?.Trim(),
+                ContactName       = item.Insured?.NamedInsured?.Trim(),
+
+                // ── Term ──
+                EffectiveDate       = ParseDateTime(item.Term?.EffectiveDate),
+                ExpirationDate      = ParseDateTime(item.Term?.ExpirationDate),
+                PolicyEffectiveDate = ParseDateTime(item.Term?.EffectiveDate),
+                PolicyExpirationDate = ParseDateTime(item.Term?.ExpirationDate),
+
+                // ── Contact ──
+                PhoneNumber = primaryPhone?.PhoneNumber,
+                Telephone   = primaryPhone?.PhoneNumber,
+                PhoneType   = primaryPhone?.PhoneType,
+                Email       = item.Contact?.Email ?? string.Empty,
+
+                // ── Address ──
+                Address1 = mailingAddress?.Line1?.Trim(),
+                Address2 = mailingAddress?.Line2?.Trim(),
+                City     = mailingAddress?.City?.Trim(),
+                State    = mailingAddress?.State?.Trim(),
+                Zip      = mailingAddress?.PostalCode?.Trim(),
+
+                // ── Policy Options ──
+                HiredAuto     = FormatBool(item.PolicyOptions?.HiredVehicle),
+                NonOwned      = FormatBool(item.PolicyOptions?.NonOwnedVehicle),
+                DriveOtherCar = FormatBool(item.PolicyOptions?.DriveOtherCar),
+
+                // ── Vehicles ──
+                VehicleCount = item.Vehicles?.Count(v => v.Year.HasValue),
+
+                // ── Rating ──
+                TotalPremium   = item.Rating?.TotalPremium,
+                WrittenPremium = item.Rating?.TotalPremium,
+
+                // ── Line of Business ──
+                LineOfBusiness = item.ProductCode?.Trim(),
             });
         }
+
         return policies;
     }
 
-    private static DateTime? ParseApiDate(int dateInt)
-    {
-        if (dateInt <= 0) return null;
-        string dateStr = dateInt.ToString();
-        if (dateStr.Length != 8) return null;
-        if (DateTime.TryParseExact(dateStr, "yyyyMMdd", null, DateTimeStyles.None, out var dt))
-        {
-            return dt;
-        }
-        return null;
-    }
+    // ──────────────────────────────────────────────────────────────
+    //  Mapping — nested detail response (GetPolicyByNumber)
+    // ──────────────────────────────────────────────────────────────
 
-    // ── DTOs matching the external API response shape ──
-
-    private class PolicyApiResponse
-    {
-        [JsonPropertyName("result")]
-        public List<ApiPolicyDto>? Result { get; set; }
-    }
-
-    private class ApiPolicyDto
-    {
-        public int QUOTEID { get; set; }
-        public string? POLICYNUMBER { get; set; }
-        public string? INSUREDNAME { get; set; }
-        public string? LINEOFBUSINESS { get; set; }
-        public int EFFECTIVEDATE { get; set; }
-        public int EXPIRATIONDATE { get; set; }
-        public string? STATUS { get; set; }
-        public decimal PREMIUM { get; set; }
-        public string? AGENTCODE { get; set; }
-        public int TRANSDATE { get; set; }
-        public int ENDORSEDATE { get; set; }
-        public string? TRANSACTIONTYPE { get; set; }
-        public string? HELDBY { get; set; }
-    }
-
-    // // ── DTOs for GetPolicyByNumberAsync (nested structure) ──
-
-    // private class PolicyInfoResponse
-    // {
-    //     [JsonPropertyName("result")]
-    //     public List<PolicyInfoDto>? Result { get; set; }
-    // }
-
-    // private class PolicyInfoDto
-    // {
-    //     [JsonPropertyName("POLICYID")]
-    //     public int? PolicyId { get; set; }
-
-    //     [JsonPropertyName("POLICYNUMBER")]
-    //     public string? PolicyNumber { get; set; }
-
-    //     [JsonPropertyName("TERM")]
-    //     public TermInfo? Term { get; set; }
-
-    //     [JsonPropertyName("CONTACT")]
-    //     public ContactInfo? Contact { get; set; }
-
-    //     [JsonPropertyName("VEHICLES")]
-    //     public List<VehicleInfo>? Vehicles { get; set; }
-
-    //     [JsonPropertyName("DRIVERS")]
-    //     public List<DriverInfo>? Drivers { get; set; }
-
-    //     [JsonPropertyName("RATING")]
-    //     public RatingInfo? Rating { get; set; }
-    // }
-
-    // private class TermInfo
-    // {
-    //     [JsonPropertyName("EFFECTIVEDATE")]
-    //     public string? EffectiveDate { get; set; }
-
-    //     [JsonPropertyName("EXPIRATIONDATE")]
-    //     public string? ExpirationDate { get; set; }
-    // }
-
-    // private class ContactInfo
-    // {
-    //     [JsonPropertyName("PHONES")]
-    //     public List<PhoneInfo>? Phones { get; set; }
-
-    //     [JsonPropertyName("EMAIL")]
-    //     public string? Email { get; set; }
-
-    //     [JsonPropertyName("MAILINGADDRESS")]
-    //     public AddressInfo? MailingAddress { get; set; }
-    // }
-
-    // private class PhoneInfo
-    // {
-    //     [JsonPropertyName("PHONENUMBER")]
-    //     public string? PhoneNumber { get; set; }
-
-    //     [JsonPropertyName("PHONETYPE")]
-    //     public string? PhoneType { get; set; }
-    // }
-
-    // private class AddressInfo
-    // {
-    //     [JsonPropertyName("ADDRESS1")]
-    //     public string? Address1 { get; set; }
-
-    //     [JsonPropertyName("ADDRESS2")]
-    //     public string? Address2 { get; set; }
-
-    //     [JsonPropertyName("CITY")]
-    //     public string? City { get; set; }
-
-    //     [JsonPropertyName("STATE")]
-    //     public string? State { get; set; }
-
-    //     [JsonPropertyName("ZIPCODE")]
-    //     public string? ZipCode { get; set; }
-    // }
-
-    // private class VehicleInfo
-    // {
-    //     [JsonPropertyName("VEHICLEID")]
-    //     public string? VehicleId { get; set; }
-
-    //     [JsonPropertyName("YEAR")]
-    //     public double? Year { get; set; }
-
-    //     [JsonPropertyName("MAKE")]
-    //     public string? Make { get; set; }
-
-    //     [JsonPropertyName("MODEL")]
-    //     public string? Model { get; set; }
-
-    //     [JsonPropertyName("VIN")]
-    //     public string? Vin { get; set; }
-    // }
-
-    // private class DriverInfo
-    // {
-    //     [JsonPropertyName("DRIVERID")]
-    //     public string? DriverId { get; set; }
-
-    //     [JsonPropertyName("FIRSTNAME")]
-    //     public string? FirstName { get; set; }
-
-    //     [JsonPropertyName("LASTNAME")]
-    //     public string? LastName { get; set; }
-
-    //     [JsonPropertyName("DRIVERLICENSENUMBER")]
-    //     public string? DriverLicenseNumber { get; set; }
-    // }
-
-    // private class RatingInfo
-    // {
-    //     [JsonPropertyName("TOTALPREMIUM")]
-    //     public string? TotalPremium { get; set; }
-
-    //     [JsonPropertyName("POLICYFEE")]
-    //     public string? PolicyFee { get; set; }
-    // }
-
-    /// <summary>
-    /// Maps the GetPolicyByNumberAsync API response to Policy entity
-    /// </summary>
     private Policy? MapPolicyInfoResponseToPolicy(string responseJson)
     {
         if (string.IsNullOrWhiteSpace(responseJson))
@@ -329,12 +203,7 @@ public class PolicyService : IPolicyService
 
         try
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
-            var apiResponse = JsonSerializer.Deserialize<PolicyInfoResponse>(responseJson, options);
+            var apiResponse = JsonSerializer.Deserialize<PolicyInfoResponse>(responseJson, _jsonOptions);
             var policyDto = apiResponse?.Result?.FirstOrDefault();
 
             if (policyDto == null)
@@ -343,31 +212,60 @@ public class PolicyService : IPolicyService
                 return null;
             }
 
-            // Map nested objects to Policy entity
+            var primaryPhone   = policyDto.Contact?.Phones?.FirstOrDefault();
+            var mailingAddress = policyDto.Contact?.MailingAddress;
+
             var policy = new Policy
             {
-                //InsuredName = policyDto. ?? string.Empty,
-                PolicyId = Convert.ToString(policyDto?.PolicyId),
-                PolicyNo = policyDto.PolicyNumber,
-                EffectiveDate = ParseDateTime(policyDto.Term?.EffectiveDate),
-                ExpirationDate = ParseDateTime(policyDto.Term?.ExpirationDate),
-                // Map CONTACT info
-                PhoneNumber = policyDto.Contact?.Phones?.FirstOrDefault()?.PhoneNumber,
-                Telephone = policyDto.Contact?.Phones?.FirstOrDefault()?.PhoneNumber,
-                Email = policyDto.Contact?.Email ?? string.Empty,
-                // Map address to individual fields
-                Address1 = policyDto.Contact?.MailingAddress?.Address1,
-                Address2 = policyDto.Contact?.MailingAddress?.Address2,
-                City = policyDto.Contact?.MailingAddress?.City,
-                Zip = policyDto.Contact?.MailingAddress?.ZipCode,
-                // Map VEHICLES (comma-separated for single field)
-                VehicleInfo = MapVehicles(policyDto.Vehicles),
-                // Map DRIVERS (comma-separated for single field)
-                DriverInfo = MapDrivers(policyDto.Drivers),
-                // Map RATING
-                TotalPremium = ParseDecimal(policyDto.Rating?.TotalPremium),
-                WrittenPremium = ParseDecimal(policyDto.Rating?.TotalPremium),
-                // PolicyFee doesn't exist in entity - could add as custom field if needed
+                // ── Identity ──
+                PolicyId          = Convert.ToString(policyDto.PolicyId) ?? string.Empty,
+                PolicyIdOriginal  = Convert.ToString(policyDto.PolicyId),
+                PolicyNo          = policyDto.PolicyNumber?.Trim(),
+                QuoteNumber       = policyDto.QuoteNumber?.Trim(),
+                TransactionCode   = policyDto.TransactionCode?.Trim(),
+                ProductCode       = policyDto.ProductCode?.Trim(),
+                Status            = policyDto.Status?.Trim(),
+
+                // ── Insured ──
+                InsuredName        = policyDto.Insured?.NamedInsured?.Trim() ?? string.Empty,
+                BusinessType       = policyDto.Insured?.BusinessType?.Trim(),
+                LicenseNumber      = policyDto.Insured?.LicenseNumber?.Trim(),
+                InsuredContactName = policyDto.Insured?.NamedInsured?.Trim(),
+                ContactName        = policyDto.Insured?.NamedInsured?.Trim(),
+
+                // ── Term ──
+                EffectiveDate        = ParseDateTime(policyDto.Term?.EffectiveDate),
+                ExpirationDate       = ParseDateTime(policyDto.Term?.ExpirationDate),
+                PolicyEffectiveDate  = ParseDateTime(policyDto.Term?.EffectiveDate),
+                PolicyExpirationDate = ParseDateTime(policyDto.Term?.ExpirationDate),
+
+                // ── Contact ──
+                PhoneNumber = primaryPhone?.PhoneNumber,
+                Telephone   = primaryPhone?.PhoneNumber,
+                PhoneType   = primaryPhone?.PhoneType,
+                Email       = policyDto.Contact?.Email ?? string.Empty,
+
+                // ── Address ──
+                Address1 = mailingAddress?.Line1?.Trim(),
+                Address2 = mailingAddress?.Line2?.Trim(),
+                City     = mailingAddress?.City?.Trim(),
+                State    = mailingAddress?.State?.Trim(),
+                Zip      = mailingAddress?.PostalCode?.Trim(),
+
+                // ── Policy Options ──
+                HiredAuto     = FormatBool(policyDto.PolicyOptions?.HiredVehicle),
+                NonOwned      = FormatBool(policyDto.PolicyOptions?.NonOwnedVehicle),
+                DriveOtherCar = FormatBool(policyDto.PolicyOptions?.DriveOtherCar),
+
+                // ── Vehicles ──
+                VehicleCount = policyDto.Vehicles?.Count(v => v.Year.HasValue),
+
+                // ── Rating ──
+                TotalPremium   = policyDto.Rating?.TotalPremium,
+                WrittenPremium = policyDto.Rating?.TotalPremium,
+
+                // ── Line of Business ──
+                LineOfBusiness = policyDto.ProductCode?.Trim(),
             };
 
             _logger.LogInformation("Successfully mapped policy {PolicyNumber}", policy.PolicyNo);
@@ -380,44 +278,309 @@ public class PolicyService : IPolicyService
         }
     }
 
+    // ──────────────────────────────────────────────────────────────
+    //  Helpers
+    // ──────────────────────────────────────────────────────────────
+
+    private static string? FormatBool(bool? value)
+        => value.HasValue ? (value.Value ? "Y" : "N") : null;
+
     private static DateTime? ParseDateTime(string? dateStr)
     {
-        if (string.IsNullOrWhiteSpace(dateStr))
-            return null;
-
-        // Handle format: yyyyMMdd
-        if (DateTime.TryParseExact(dateStr, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out var date))
-            return date;
-
-        return null;
+        if (string.IsNullOrWhiteSpace(dateStr)) return null;
+        return DateTime.TryParseExact(
+            dateStr, "yyyyMMdd", null, DateTimeStyles.None, out var dt) ? dt : null;
     }
 
-    private static decimal? ParseDecimal(string? value)
+    private static DateTime? ParseApiDate(int dateInt)
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return null;
-
-        if (decimal.TryParse(value, out var result))
-            return result;
-
-        return null;
+        if (dateInt <= 0) return null;
+        var dateStr = dateInt.ToString();
+        return dateStr.Length == 8 &&
+               DateTime.TryParseExact(dateStr, "yyyyMMdd", null, DateTimeStyles.None, out var dt)
+            ? dt : null;
     }
 
-    private static string MapDrivers(List<DriverInfo>? drivers)
-    {
-        if (drivers == null || !drivers.Any())
-            return string.Empty;
+    private static decimal? ParseDecimal(decimal? value) => value;
 
-        return string.Join("; ", drivers.Select(d =>
-            $"{d.FirstName} {d.LastName} (License: {d.DriverLicenseNumber})"));
+    // ──────────────────────────────────────────────────────────────
+    //  DTOs — flat list response  (GetQuotes)
+    // ──────────────────────────────────────────────────────────────
+
+    private class PolicyApiResponse
+    {
+        [JsonPropertyName("result")]
+        public List<ApiPolicyDto>? Result { get; set; }
     }
 
-    private static string MapVehicles(List<VehicleInfo>? vehicles)
+    // Reuse the same rich DTO for both endpoints since the API
+    // returns the same envelope shape.
+    private class ApiPolicyDto
     {
-        if (vehicles == null || !vehicles.Any())
-            return string.Empty;
+        [JsonPropertyName("POLICYID")]
+        public int? PolicyId { get; set; }
 
-        return string.Join("; ", vehicles.Select(v =>
-            $"{v.Year} {v.Make} {v.Model} (VIN: {v.Vin})"));
+        [JsonPropertyName("POLICYNUMBER")]
+        public string? PolicyNumber { get; set; }
+
+        [JsonPropertyName("QUOTENUMBER")]
+        public string? QuoteNumber { get; set; }
+
+        [JsonPropertyName("TRANSACTIONCODE")]
+        public string? TransactionCode { get; set; }
+
+        [JsonPropertyName("STATUS")]
+        public string? Status { get; set; }
+
+        [JsonPropertyName("PRODUCTCODE")]
+        public string? ProductCode { get; set; }
+
+        [JsonPropertyName("TERM")]
+        public TermInfo? Term { get; set; }
+
+        [JsonPropertyName("SOURCESYSTEM")]
+        public string? SourceSystem { get; set; }
+
+        [JsonPropertyName("RECORDVERSION")]
+        public string? RecordVersion { get; set; }
+
+        [JsonPropertyName("INSURED")]
+        public InsuredInfo? Insured { get; set; }
+
+        [JsonPropertyName("CONTACT")]
+        public ContactInfo? Contact { get; set; }
+
+        [JsonPropertyName("POLICYOPTIONS")]
+        public PolicyOptions? PolicyOptions { get; set; }
+
+        [JsonPropertyName("VEHICLES")]
+        public List<VehicleInfo>? Vehicles { get; set; }
+
+        [JsonPropertyName("DRIVERS")]
+        public List<DriverInfo>? Drivers { get; set; }
+
+        [JsonPropertyName("COVERAGES")]
+        public List<object>? Coverages { get; set; }
+
+        [JsonPropertyName("RATING")]
+        public RatingInfo? Rating { get; set; }
+
+        [JsonPropertyName("QUESTIONNAIRE")]
+        public QuestionnaireInfo? Questionnaire { get; set; }
+
+        [JsonPropertyName("MESSAGES")]
+        public string? Messages { get; set; }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  DTOs — nested detail response  (GetPolicyByNumber)
+    // ──────────────────────────────────────────────────────────────
+
+    private class PolicyInfoResponse
+    {
+        [JsonPropertyName("result")]
+        public List<ApiPolicyDto>? Result { get; set; }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Shared nested DTOs
+    // ──────────────────────────────────────────────────────────────
+
+    private class TermInfo
+    {
+        [JsonPropertyName("EFFECTIVEDATE")]
+        public string? EffectiveDate { get; set; }
+
+        [JsonPropertyName("EXPIRATIONDATE")]
+        public string? ExpirationDate { get; set; }
+    }
+
+    private class InsuredInfo
+    {
+        [JsonPropertyName("NAMEDINSURED")]
+        public string? NamedInsured { get; set; }
+
+        [JsonPropertyName("BUSINESSTYPE")]
+        public string? BusinessType { get; set; }
+
+        [JsonPropertyName("LICENSENUMBER")]
+        public string? LicenseNumber { get; set; }
+    }
+
+    private class ContactInfo
+    {
+        [JsonPropertyName("PHONES")]
+        public List<PhoneInfo>? Phones { get; set; }
+
+        [JsonPropertyName("EMAIL")]
+        public string? Email { get; set; }
+
+        [JsonPropertyName("MAILINGADDRESS")]
+        public AddressInfo? MailingAddress { get; set; }
+    }
+
+    private class PhoneInfo
+    {
+        [JsonPropertyName("PHONETYPE")]
+        public string? PhoneType { get; set; }
+
+        [JsonPropertyName("PHONENUMBER")]
+        public string? PhoneNumber { get; set; }
+
+        [JsonPropertyName("ISPRIMARY")]
+        public string? IsPrimary { get; set; }
+    }
+
+    private class AddressInfo
+    {
+        [JsonPropertyName("LINE1")]
+        public string? Line1 { get; set; }
+
+        [JsonPropertyName("LINE2")]
+        public string? Line2 { get; set; }
+
+        [JsonPropertyName("CITY")]
+        public string? City { get; set; }
+
+        [JsonPropertyName("STATE")]
+        public string? State { get; set; }
+
+        [JsonPropertyName("POSTALCODE")]
+        public string? PostalCode { get; set; }
+
+        [JsonPropertyName("COUNTRY")]
+        public string? Country { get; set; }
+    }
+
+    private class PolicyOptions
+    {
+        [JsonPropertyName("NONOWNEDVEHICLE")]
+        public bool? NonOwnedVehicle { get; set; }
+
+        [JsonPropertyName("HIREDVEHICLE")]
+        public bool? HiredVehicle { get; set; }
+
+        [JsonPropertyName("DRIVEOTHERCAR")]
+        public bool? DriveOtherCar { get; set; }
+    }
+
+    private class VehicleInfo
+    {
+        [JsonPropertyName("VEHICLEID")]
+        public string? VehicleId { get; set; }
+
+        [JsonPropertyName("LOCNUM")]
+        public string? LocNum { get; set; }
+
+        [JsonPropertyName("YEAR")]
+        public int? Year { get; set; }
+
+        [JsonPropertyName("MAKE")]
+        public string? Make { get; set; }
+
+        [JsonPropertyName("MODEL")]
+        public string? Model { get; set; }
+
+        [JsonPropertyName("VIN")]
+        public string? Vin { get; set; }
+
+        [JsonPropertyName("PLATENUMBER")]
+        public string? PlateNumber { get; set; }
+
+        [JsonPropertyName("GARAGING")]
+        public GaragingInfo? Garaging { get; set; }
+
+        [JsonPropertyName("USECLASS")]
+        public string? UseClass { get; set; }
+
+        [JsonPropertyName("RADIUS")]
+        public string? Radius { get; set; }
+
+        [JsonPropertyName("COVERAGES")]
+        public object? Coverages { get; set; }
+
+        [JsonPropertyName("LOSSPAYEES")]
+        public object? LossPayees { get; set; }
+    }
+
+    private class GaragingInfo
+    {
+        [JsonPropertyName("ZIPCODE")]
+        public string? ZipCode { get; set; }
+
+        [JsonPropertyName("CITY")]
+        public string? City { get; set; }
+
+        [JsonPropertyName("STATE")]
+        public string? State { get; set; }
+    }
+
+    private class DriverInfo
+    {
+        [JsonPropertyName("DRIVERID")]
+        public string? DriverId { get; set; }
+
+        [JsonPropertyName("DRVNUM")]
+        public string? DriverNum { get; set; }
+
+        [JsonPropertyName("FIRSTNAME")]
+        public string? FirstName { get; set; }
+
+        [JsonPropertyName("LASTNAME")]
+        public string? LastName { get; set; }
+
+        [JsonPropertyName("DATEOFBIRTH")]
+        public string? DateOfBirth { get; set; }
+
+        [JsonPropertyName("LICENSENUMBER")]
+        public string? LicenseNumber { get; set; }
+
+        [JsonPropertyName("LICENSESTATE")]
+        public string? LicenseState { get; set; }
+
+        [JsonPropertyName("LICENSECLASS")]
+        public string? LicenseClass { get; set; }
+
+        [JsonPropertyName("SDIPSTEP")]
+        public string? SdipStep { get; set; }
+
+        [JsonPropertyName("ASSIGNEDVEHICLEIDS")]
+        public List<string>? AssignedVehicleIds { get; set; }
+    }
+
+    private class RatingInfo
+    {
+        [JsonPropertyName("LASTCALCULATEDAT")]
+        public string? LastCalculatedAt { get; set; }
+
+        [JsonPropertyName("TOTALPREMIUM")]
+        public decimal? TotalPremium { get; set; }
+
+        [JsonPropertyName("CURRENCY")]
+        public string? Currency { get; set; }
+
+        [JsonPropertyName("IRPM")]
+        public IrpmInfo? Irpm { get; set; }
+
+        [JsonPropertyName("STATISTICALSUMMARY")]
+        public List<object>? StatisticalSummary { get; set; }
+    }
+
+    private class IrpmInfo
+    {
+        [JsonPropertyName("LIABILITYADJUSTMENT")]
+        public decimal? LiabilityAdjustment { get; set; }
+
+        [JsonPropertyName("PHYSICALDAMAGEADJUSTMENT")]
+        public decimal? PhysicalDamageAdjustment { get; set; }
+    }
+
+    private class QuestionnaireInfo
+    {
+        [JsonPropertyName("ACORDSTATUS")]
+        public string? AcordStatus { get; set; }
+
+        [JsonPropertyName("SUPPLEMENTALSTATUS")]
+        public string? SupplementalStatus { get; set; }
     }
 }
