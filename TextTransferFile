@@ -1,331 +1,77 @@
-import axios from 'axios';
-import type { Quote, Policy, AppNotification, Endorsement, Vehicle, Driver, LineOfBusiness, TransactionType, QuoteStatus, BusinessType } from '@/core/types';
-import {
-  MOCK_QUOTES, MOCK_NOTIFICATIONS, MOCK_ENDORSEMENTS,
-  MOCK_VEHICLES, MOCK_DRIVERS,
-} from '@/core/api/mockData';
-import staticPolicies from '@/core/api/policies.json';
+-----As per request and response requirment------
+Authentication: API Key
+x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W
 
-const BASE_URL = '';
+-------Get Quotes----
 
-// Static policies cache - used when API fails
-let staticPoliciesCache: Policy[] | null = null;
+curl --location 'http://10.1.16.145:8020/api/policy/GetQuotes' \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W' \
+--data '{
+  "PolicyNumber": "",
+  "insuredName": "",
+  "agentCode": "",
+  "limit":5
+}'
 
-function delay(ms = 600) {
-  return new Promise(res => setTimeout(res, ms));
-}
+Note: Result Limiting Behavior
+1. If limit is null or 0, the API will return all available records without applying any limit.
+2. If limit is greater than 0, the API will return only the specified number of records.
 
-// ─── Real API types (internal) ────────────────────────────────────────
-interface ApiPolicyRecord {
-  policyId: string;
-  insuredName: string;
-  phoneNumber?: string;
-  mobileNumber?: string;
-  policyNo: string;
-  quoteId?: string;
-  productName?: string;
-  agentCode: string;
-  accountingDate?: string;
-  effectiveDate: string;
-  expirationDate?: string;
-  policyExpirationDate?: string;
-  transactionType?: string;
-  transactionCode?: string;
-  telephone?: string;
-  email?: string;
-  contactName?: string;
-  insuredContactName?: string;
-  businessType?: string;
-  companyCode?: string;
-  heldBy?: string;
-  state?: string;
-  stateShortName?: string;
-  address1?: string;
-  address2?: string | null;
-  city?: string;
-  zip?: string;
-  ssnFein?: string;
-  licenseNumber?: string;
-  relatedPolicyNumber?: string | null;
-  vehicleCount?: number;
-  driverCount?: number;
-  writtenPremium?: number;
-  totalPremium?: number;
-  hiredAuto?: string;
-  nonOwned?: string;
-  driveOtherCar?: string;
-}
 
-const LOB_MAP: Record<string, LineOfBusiness> = {
-  'Commercial Auto': 'Commercial Auto',
-  'Personal Auto': 'MA Personal Auto',
-  'MA Personal Auto': 'MA Personal Auto',
-  'MA Commercial Auto': 'MA Commercial Auto',
-};
+-----Get Policy Details----
+curl --location 'http://10.1.16.145:8020/api/Policy/MCAQ002864' \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W'
 
-const TX_TYPE_MAP: Record<string, TransactionType> = {
-  'NEW POLICY': 'Quote',
-  'RENEWAL': 'Renewal',
-  'ENDORSEMENT': 'Endorsement',
-  'CANCELLATION': 'Cancellation',
-};
 
-const STATUS_MAP: Record<string, QuoteStatus> = {
-  NB: 'Active',
-  RN: 'Active',
-  EN: 'Active',
-  CN: 'Declined',
-};
+-------Update Phone Number-----
 
-function mapApiPolicy(p: ApiPolicyRecord): Policy {
-  const addressParts = [p.address1, p.address2 ?? undefined, p.city, p.stateShortName ?? p.state, p.zip]
-    .filter(Boolean)
-    .join(', ');
+curl --location 'http://10.1.16.145:8020/api/policy/SavePolicyInfo' \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W' \
+--data '{
+  "telephone": "4135227575",
+  "policyNumber": "AFV 209395"
+}'
 
-  return {
-    id: p.policyId,
-    policyNumber: p.policyNo,
-    quoteId: p.quoteId,
-    insuredName: p.insuredName,
-    lineOfBusiness: LOB_MAP[p.productName ?? ''] ?? 'Commercial Auto',
-    effectiveDate: p.effectiveDate,
-    expirationDate: p.expirationDate ?? p.policyExpirationDate ?? '',
-    status: STATUS_MAP[p.transactionCode ?? ''] ?? 'Active',
-    premium: p.totalPremium ?? p.writtenPremium ?? 0,
-    agentCode: p.agentCode,
-    transDate: p.accountingDate ?? p.effectiveDate,
-    transactionType: TX_TYPE_MAP[(p.transactionType ?? '').toUpperCase()] ?? 'Quote',
-    heldBy: p.heldBy ?? p.companyCode ?? '',
-    phone: p.phoneNumber ?? p.telephone ?? p.mobileNumber,
-    email: p.email,
-    contactName: p.contactName ?? p.insuredContactName,
-    insuredContactName: p.insuredContactName ?? p.contactName,
-    licenseNumber: p.licenseNumber ?? p.ssnFein,
-    address: addressParts,
-    relatedPolicy: p.relatedPolicyNumber ?? undefined,
-    vehicleCount: p.vehicleCount ?? 0,
-    driverCount: p.driverCount ?? 0,
-    hiredAuto: (p.hiredAuto ?? '').toUpperCase() === 'Y',
-    nonOwnedAuto: (p.nonOwned ?? '').toUpperCase() === 'Y',
-    driveOtherCar: (p.driveOtherCar ?? '').toUpperCase() === 'Y',
-    state: p.state ?? p.stateShortName,
-    businessType: p.businessType as BusinessType | undefined,
-  };
-}
+----------------------------------------------------------------------------------------------
 
-// Initialize static policies cache from policies.json
-function getStaticPoliciesCache(): Policy[] {
-  if (staticPoliciesCache === null) {
-    staticPoliciesCache = staticPolicies.map((p: any) => mapApiPolicy(p));
-  }
-  return staticPoliciesCache;
-}
+-----Proper error and response massages v2------
 
-// Quotes
-export const quoteService = {
-  async list(): Promise<Quote[]> {
-    await delay();
-    return [...MOCK_QUOTES];
-  },
-  async get(id: string): Promise<Quote | null> {
-    await delay(300);
-    return MOCK_QUOTES.find(q => q.id === id || q.quoteId === id) ?? null;
-  },
-  async create(data: Partial<Quote>): Promise<Quote> {
-    await delay(800);
-    const now = new Date().toISOString().split('T')[0];
-    const newQuote: Quote = {
-      id: `q${Date.now()}`,
-      quoteId: `MCAQ${Math.floor(Math.random() * 900000 + 100000)}`,
-      status: 'Draft',
-      lineOfBusiness: data.lineOfBusiness ?? 'MA Commercial Auto',
-      transactionType: 'Quote',
-      transDate: now,
-      effectiveDate: data.effectiveDate ?? now,
-      endDate: data.endDate ?? now,
-      agentCode: '00130',
-      heldBy: 'Co',
-      insuredName: data.insuredName ?? '',
-      vehicles: [],
-      drivers: [],
-      formCompleteness: 0,
-      estimatedPremium: 0,
-      ...data,
-    };
-    MOCK_QUOTES.push(newQuote);
-    return newQuote;
-  },
-  async update(id: string, data: Partial<Quote>): Promise<Quote> {
-    await delay(400);
-    const idx = MOCK_QUOTES.findIndex(q => q.id === id);
-    if (idx === -1) throw new Error('Quote not found');
-    MOCK_QUOTES[idx] = { ...MOCK_QUOTES[idx], ...data };
-    return MOCK_QUOTES[idx];
-  },
-  async generateQuote(id: string): Promise<Quote> {
-    await delay(1200);
-    const idx = MOCK_QUOTES.findIndex(q => q.id === id);
-    if (idx === -1) throw new Error('Quote not found');
-    const premium = MOCK_QUOTES[idx].vehicles.reduce((sum, v) => sum + (v.coverage ? 1540 : 0), 1200);
-    MOCK_QUOTES[idx] = {
-      ...MOCK_QUOTES[idx],
-      status: 'Quoted',
-      estimatedPremium: premium,
-      formCompleteness: 100,
-      premiumBreakdown: {
-        totalPremium: premium,
-        vehicles: MOCK_QUOTES[idx].vehicles.map(v => ({
-          vinNumber: v.vinNumber,
-          make: `${v.year} ${v.make} ${v.model}`,
-          year: v.year,
-          modal: v.type,
-          premium: Math.round(premium / Math.max(MOCK_QUOTES[idx].vehicles.length, 1)),
-        })),
-      },
-    };
-    return MOCK_QUOTES[idx];
-  },
-};
+Authentication: API Key
+x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W
 
-// Policies
-export const policyService = {
-  async list(search = ''): Promise<Policy[]> {
-    try {
+-------Get Quotes----
 
-      //  const res = await fetch(`${BASE_URL}/api/Policies`, {
-      // method: 'POST',
-      // headers: { 'Content-Type': 'application/json', accept: '*/*' },
-      // body: JSON.stringify({ search }),
-      const res = await fetch(`${BASE_URL}/api/Policies/quotes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', accept: '*/*' },
-        body: JSON.stringify({
-         
-          searchkey: search || "",
-         
-        }),
-      });
-      if (!res.ok) {
-        throw new Error(`API returned ${res.status}`);
-      }
-      const data: ApiPolicyRecord[] = await res.json();
-      return data.map(mapApiPolicy);
-    } catch (error) {
-      console.warn('Failed to fetch policies from API, using static data:', error);
-      const normalizedSearch = search.trim().toLowerCase();
-      const cache = getStaticPoliciesCache();
-      if (!normalizedSearch) return cache;
-      return cache.filter(p =>
-        p.insuredName.toLowerCase().includes(normalizedSearch) ||
-        p.policyNumber.toLowerCase().includes(normalizedSearch)
-      );
-    }
-  },
-  async get(id: string): Promise<Policy | null> {
-    try {
-      const { data } = await axios.get<ApiPolicyRecord | ApiPolicyRecord[]>(`${BASE_URL}/api/Policies/${id}`);
-      const record = Array.isArray(data) ? data[0] : data;
-      if (record) return mapApiPolicy(record);
-    } catch (error) {
-      console.warn('Failed to fetch policy from API:', error);
-    }
-    const cache = getStaticPoliciesCache();
-    return cache.find(p => p.id === id || p.policyNumber === id) ?? null;
-  },
-  async updatePhone(id: string, phoneNumber: string): Promise<void> {
-    try {
-      await axios.put(`${BASE_URL}/api/Policies/${id}/phone`, { phoneNumber });
-    } catch (error) {
-      console.warn('Failed to update phone via API, updating static cache:', error);
-      const cache = getStaticPoliciesCache();
-      const policy = cache.find(p => p.id === id || p.policyNumber === id);
-      if (policy) {
-        policy.phone = phoneNumber;
-      } else {
-        throw new Error(`Policy not found: ${id}`);
-      }
-    }
-  },
-};
+curl --location 'http://10.1.16.145:8020/api/v2/policy/quotes' \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W' \
+--data '{
+  "PolicyNumber": "",
+  "insuredName": "",
+  "agentCode": "",
+  "limit":10
+}'
 
-// Notifications
-export const notificationService = {
-  async list(): Promise<AppNotification[]> {
-    await delay(200);
-    return [...MOCK_NOTIFICATIONS];
-  },
-  async markRead(id: string): Promise<void> {
-    await delay(100);
-    const n = MOCK_NOTIFICATIONS.find(n => n.id === id);
-    if (n) n.read = true;
-  },
-  async markAllRead(): Promise<void> {
-    await delay(200);
-    MOCK_NOTIFICATIONS.forEach(n => (n.read = true));
-  },
-};
+Note: Result Limiting Behavior
+1. If limit is null or 0, the API will return all available records without applying any limit.
+2. If limit is greater than 0, the API will return only the specified number of records.
 
-// Endorsements
-export const endorsementService = {
-  async list(policyId?: string): Promise<Endorsement[]> {
-    await delay();
-    return policyId ? MOCK_ENDORSEMENTS.filter(e => e.policyId === policyId) : [...MOCK_ENDORSEMENTS];
-  },
-  async get(id: string): Promise<Endorsement | null> {
-    await delay(300);
-    return MOCK_ENDORSEMENTS.find(e => e.id === id) ?? null;
-  },
-  async update(id: string, data: Partial<Endorsement>): Promise<Endorsement> {
-    await delay(500);
-    const idx = MOCK_ENDORSEMENTS.findIndex(e => e.id === id);
-    if (idx === -1) throw new Error('Endorsement not found');
-    MOCK_ENDORSEMENTS[idx] = { ...MOCK_ENDORSEMENTS[idx], ...data };
-    return MOCK_ENDORSEMENTS[idx];
-  },
-};
+-----Get Policy Details----
 
-// Vehicle validation (RMV mock)
-export const vehicleService = {
-  async validateVIN(vin: string): Promise<Vehicle | null> {
-    await delay(1000);
-    const existing = MOCK_VEHICLES.find(v => v.vinNumber === vin);
-    if (existing) return existing;
-    if (vin.length >= 10) {
-      return {
-        id: `v${Date.now()}`,
-        vinNumber: vin,
-        year: '2022',
-        make: '2022 Ford Transit 250',
-        model: 'Transit 250',
-        type: 'Truck',
-        rmvStatus: Math.random() > 0.3 ? 'Accepted' : 'Rejected',
-      };
-    }
-    return null;
-  },
-};
+curl --location 'http://10.1.16.145:8020/api/v2/Policy/MCAQ002864' \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W'
 
-// Driver validation (RMV mock)
-export const driverService = {
-  async validateLicense(licenseNumber: string, state: string): Promise<Driver | null> {
-    await delay(1000);
-    const existing = MOCK_DRIVERS.find(d => d.licenseNumber === licenseNumber);
-    if (existing) return existing;
-    if (licenseNumber.length >= 6) {
-      return {
-        id: `d${Date.now()}`,
-        licenseNumber,
-        state,
-        firstName: 'John',
-        lastName: 'Smith',
-        dateOfBirth: '01/15/1985',
-        age: 35,
-        gender: 'Male',
-        licenseStatus: 'Active',
-        rmvStatus: Math.random() > 0.3 ? 'Accepted' : 'Rejected',
-        namedInsured: 'None',
-      };
-    }
-    return null;
-  },
-};
+
+-------Update Phone Number-----
+
+curl --location 'http://10.1.16.145:8020/api/v2/policy/SavePolicyInfo' \
+--header 'Content-Type: application/json' \
+--header 'x-api-key: API-MCA-QOL2-POLICY-QUINCY-aZ3mP9XvT6kL2W' \
+--data '{
+  "telephone": "4135227575",
+  "policyNumber": "AFV 209395"
+}'
+
