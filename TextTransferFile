@@ -1,232 +1,194 @@
-{
-    "policyId": "MCAQ002864",
-    "policyNumber": "MCAQ002864",
-    "quoteNumber": "",
-    "transactionCode": "10",
-    "status": "PEND",
-    "productCode": "MCA",
-    "sourceSystem": "DB2",
-    "recordVersion": "TR30",
-    "term": {
+
+• {
+    "id": "MCAQ002864",
+    "quoteId": "MCAQ002864",
+    "lineOfBusiness": "MA Commercial Auto",
+    "insuredName": "THOMAS H CRAIG",
+    "email": null,
+    "phone": "3773737375",
+    "estimatedPremium": 2303,
+    "vehicles": [],
+    "drivers": [],
+    "uwQuestionnaire": {
+      "hazardousMaterials": null,
+      "validFEIN": null,
+      "snowPlowing": null,
+      "iccPucFilings": null
+    },
+    "coverageIndicators": {
+      "nonOwnedAuto": true,
+      "hiredAuto": true,
+      "driveOtherCar": false
+    },
+    "summaryCounts": {
+      "vehicles": 3,
+      "coverage": 2,
+      "drivers": 1,
+      "truck": 0,
+      "privatePassenger": 0,
+      "trailer": 0
+    },
+    "policyDetails": {
+      "insuredName": "THOMAS H CRAIG",
+      "insuredContactName": null,
+      "licenseNumber": "1",
+      "emailAddress": null,
+      "phone": "3773737375",
+      "policyPeriodStart": "2024-08-01",
+      "policyPeriodEnd": "2025-08-01",
+      "businessType": "",
+      "address": "92 SILVER ST, SOUTH HADLEY, MA, 010751618, US",
+      "relatedPolicy": null,
+      "additionalNames": [],
+      "accountCredit": null,
+      "autoPlusEndorsement": null
+    },
+    "pageSourceData": {
+      "policyId": "MCAQ002864",
+      "policyNumber": "MCAQ002864",
+      "quoteNumber": "",
+      "transactionCode": "10",
+      "status": "PEND",
+      "productCode": "MCA",
+      "sourceSystem": "DB2",
+      "recordVersion": "TR30",
+      "term": {
         "effectiveDate": "2024-08-01",
         "expirationDate": "2025-08-01"
-    },
-    "insured": {
+      },
+      "insured": {
         "namedInsured": "THOMAS H CRAIG",
         "businessType": "",
         "licenseNumber": "1"
-    },
-    "contact": {
+      },
+      "contact": {
         "phones": [
-            {
-                "phoneType": "BUSINESS",
-                "phoneNumber": "3773737375",
-                "isPrimary": true
-            }
+          {
+            "phoneType": "BUSINESS",
+            "phoneNumber": "3773737375",
+            "isPrimary": true
+          }
         ],
         "email": null,
         "mailingAddress": {
-            "line1": "92 SILVER ST",
-            "line2": "",
-            "city": "SOUTH HADLEY",
-            "state": "MA",
-            "postalCode": "010751618",
-            "country": "US"
+          "line1": "92 SILVER ST",
+          "line2": "",
+          "city": "SOUTH HADLEY",
+          "state": "MA",
+          "postalCode": "010751618",
+          "country": "US"
         }
-    },
-    "policyOptions": {
+      },
+      "policyOptions": {
         "nonOwnedVehicle": true,
         "hiredVehicle": true,
         "driveOtherCar": false
-    },
-    "vehicles": [
+      },
+      "vehicles": [
         {
-            "vehicleId": "JALB4B1K7R7002291",
-            "locnum": "001",
-            "year": 1994,
-            "make": "",
-            "model": "",
-            "vin": "JALB4B1K7R7002291",
-            "plateNumber": "X89522",
-            "useClass": "P",
-            "radius": "",
-            "garaging": {
-                "zipCode": "01075",
-                "city": "SOUTH HADLEY",
-                "state": null
-            },
-            "coverages": [
-                {
-                    "code": "0",
-                    "limit": "",
-                    "deductible": 500
-                }
-            ],
-            "lossPayees": null
+          "vehicleId": "JALB4B1K7R7002291",
+          "locnum": "001",
+          "year": 1994,
+          "make": "",
+          "model": "",
+          "vin": "JALB4B1K7R7002291",
+          "plateNumber": "X89522",
+          "useClass": "P",
+          "radius": "",
+          "garaging": {
+            "zipCode": "01075",
+            "city": "SOUTH HADLEY",
+            "state": null
+          },
+          "coverages": [
+            {
+              "code": "0",
+              "limit": "",
+              "deductible": 500
+            }
+          ],
+          "lossPayees": null
         },
         {
-            "vehicleId": "N/A",
-            "locnum": "501",
-            "year": 2024,
-            "make": "",
-            "model": "",
-            "vin": "N/A",
-            "plateNumber": "NOPLATE",
-            "useClass": "P",
-            "radius": "",
-            "garaging": {
-                "zipCode": "",
-                "city": "",
-                "state": null
-            },
-            "coverages": [
-                {
-                    "code": "0",
-                    "limit": "",
-                    "deductible": 0
-                }
-            ],
-            "lossPayees": null
+          "vehicleId": "N/A",
+          "locnum": "501",
+          "year": 2024,
+          "make": "",
+          "model": "",
+          "vin": "N/A",
+          "plateNumber": "NOPLATE",
+          "useClass": "P",
+          "radius": "",
+          "garaging": {
+            "zipCode": "",
+            "city": "",
+            "state": null
+          },
+          "coverages": [
+            {
+              "code": "0",
+              "limit": "",
+              "deductible": 0
+            }
+          ],
+          "lossPayees": null
         },
         {
-            "vehicleId": "N/A",
-            "locnum": "503",
-            "year": 2024,
-            "make": "",
-            "model": "",
-            "vin": "N/A",
-            "plateNumber": "NOPLATE",
-            "useClass": "P",
-            "radius": "",
-            "garaging": {
-                "zipCode": "",
-                "city": "",
-                "state": null
-            },
-            "coverages": [
-                {
-                    "code": "0",
-                    "limit": "",
-                    "deductible": 0
-                }
-            ],
-            "lossPayees": null
+          "vehicleId": "N/A",
+          "locnum": "503",
+          "year": 2024,
+          "make": "",
+          "model": "",
+          "vin": "N/A",
+          "plateNumber": "NOPLATE",
+          "useClass": "P",
+          "radius": "",
+          "garaging": {
+            "zipCode": "",
+            "city": "",
+            "state": null
+          },
+          "coverages": [
+            {
+              "code": "0",
+              "limit": "",
+              "deductible": 0
+            }
+          ],
+          "lossPayees": null
         }
-    ],
-    "drivers": [
+      ],
+      "drivers": [
         {
-            "driverId": "001",
-            "drvnum": "001",
-            "firstName": "DANIELLE",
-            "lastName": "GIRARD",
-            "dateOfBirth": "1981-06-16",
-            "licenseNumber": "S18945728",
-            "licenseState": "MA",
-            "licenseClass": "",
-            "sdipStep": 99,
-            "assignedVehicleIds": []
+          "driverId": "001",
+          "drvnum": "001",
+          "firstName": "DANIELLE",
+          "lastName": "GIRARD",
+          "dateOfBirth": "1981-06-16",
+          "licenseNumber": "S18945728",
+          "licenseState": "MA",
+          "licenseClass": "",
+          "sdipStep": 99,
+          "assignedVehicleIds": []
         }
-    ],
-    "coverages": null,
-    "rating": {
+      ],
+      "coverages": null,
+      "rating": {
         "lastCalculatedAt": "2026-05-06T12:02:25Z",
-        "totalPremium": 2303.00,
+        "totalPremium": 2303,
         "currency": "USD",
         "irpm": null,
         "statisticalSummary": null
+      },
+      "questionnaire": null,
+      "messages": []
     },
-    "questionnaire": null,
-
-
-
-    "messages": []
-}
-
-
-
-
-
-{
-  "success": true,
-  "message": "Policy details retrieved successfully",
-  "errorCode": null,
-  "durationMs": 190,
-  "count": 1,
-  "data": {
-    "policyId": "MCAQ003205",
-    "insuredName": "AT AND T AUTOMOTIVE SERVICES",
-    "phoneNumber": "2163636665",
-    "mobileNumber": null,
-    "policyNo": "MCAQ003205",
-    "productCode": "MCA",
-    "productName": null,
-    "state": "CA",
-    "insuredCode": null,
-    "agentCode": null,
-    "accountingDate": null,
-    "effectiveDate": "2026-07-01T00:00:00+05:30",
-    "expirationDate": "2027-07-01T00:00:00+05:30",
-    "policyEffectiveDate": "2026-07-01T00:00:00+05:30",
-    "referralCode": null,
-    "newRenew": null,
-    "newVenture": null,
-    "renewalTerm": null,
-    "authorityType": null,
-    "quantumSubAgent": null,
-    "transactionType": null,
-    "stateShortName": null,
-    "policyIdOriginal": "MCAQ003205",
-    "policyCancellationDate": null,
-    "vehicleCount": 3,
-    "claimCount": null,
-    "liabilityLimit": null,
-    "policyExpirationDate": "2027-07-01T00:00:00+05:30",
-    "quoteId": null,
-    "quoteNumber": "",
-    "transactionCode": "10",
-    "endorsementSeqNo": null,
-    "policyTerm": null,
-    "address1": "INC",
-    "address2": "2988 CAMPUS DR",
-    "city": "SAN MATEO",
-    "zip": "944032533",
-    "telephone": "2163636665",
-    "phoneType": "BUSINESS",
-    "email": "",
-    "contactName": "AT AND T AUTOMOTIVE SERVICES",
-    "ssnFein": null,
-    "businessType": "",
-    "subProducer": null,
-    "companyCode": null,
-    "policyType": null,
-    "agencyType": null,
-    "paymentPlan": null,
-    "fleet": null,
-    "hiredAuto": "Y",
-    "nonOwned": "Y",
-    "driveOtherCar": "N",
-    "accountCredit": null,
-    "relatedPolicy": null,
-    "relatedPolicyNumber": null,
-    "eBill": null,
-    "writtenPremium": 3216,
-    "totalPremium": 3216,
-    "clearanceStatus": null,
-    "quoteLinkedPolicy": null,
-    "prorateReason": null,
-    "nonRenewal": null,
-    "nonRenewalReason": null,
-    "priorPolicy": null,
-    "transactionDate": null,
-    "userId": null,
-    "underwriterId": null,
-    "status": "PEND",
-    "lineOfBusiness": "MCA",
-    "heldBy": null,
-    "endorseDate": null,
-    "insuredContactName": "AT AND T AUTOMOTIVE SERVICES",
-    "licenseNumber": "1",
-    "vehicleInfo": null,
-    "driverInfo": null
+    "missingOrNotProvidedByApi": {
+      "insuredContactName": null,
+      "relatedPolicy": null,
+      "accountCredit": null,
+      "autoPlusEndorsement": null,
+      "additionalNames": [],
+      "uwQuestionnaireSource": null
+    }
   }
-}
