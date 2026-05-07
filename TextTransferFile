@@ -1,194 +1,158 @@
-
-• {
-    "id": "MCAQ002864",
-    "quoteId": "MCAQ002864",
-    "lineOfBusiness": "MA Commercial Auto",
-    "insuredName": "THOMAS H CRAIG",
-    "email": null,
-    "phone": "3773737375",
-    "estimatedPremium": 2303,
-    "vehicles": [],
-    "drivers": [],
-    "uwQuestionnaire": {
-      "hazardousMaterials": null,
-      "validFEIN": null,
-      "snowPlowing": null,
-      "iccPucFilings": null
-    },
-    "coverageIndicators": {
-      "nonOwnedAuto": true,
-      "hiredAuto": true,
-      "driveOtherCar": false
-    },
-    "summaryCounts": {
-      "vehicles": 3,
-      "coverage": 2,
-      "drivers": 1,
-      "truck": 0,
-      "privatePassenger": 0,
-      "trailer": 0
-    },
-    "policyDetails": {
-      "insuredName": "THOMAS H CRAIG",
-      "insuredContactName": null,
-      "licenseNumber": "1",
-      "emailAddress": null,
-      "phone": "3773737375",
-      "policyPeriodStart": "2024-08-01",
-      "policyPeriodEnd": "2025-08-01",
-      "businessType": "",
-      "address": "92 SILVER ST, SOUTH HADLEY, MA, 010751618, US",
-      "relatedPolicy": null,
-      "additionalNames": [],
-      "accountCredit": null,
-      "autoPlusEndorsement": null
-    },
-    "pageSourceData": {
-      "policyId": "MCAQ002864",
-      "policyNumber": "MCAQ002864",
-      "quoteNumber": "",
-      "transactionCode": "10",
-      "status": "PEND",
-      "productCode": "MCA",
-      "sourceSystem": "DB2",
-      "recordVersion": "TR30",
-      "term": {
-        "effectiveDate": "2024-08-01",
-        "expirationDate": "2025-08-01"
-      },
-      "insured": {
-        "namedInsured": "THOMAS H CRAIG",
-        "businessType": "",
-        "licenseNumber": "1"
-      },
-      "contact": {
-        "phones": [
-          {
-            "phoneType": "BUSINESS",
-            "phoneNumber": "3773737375",
-            "isPrimary": true
-          }
+{
+    "success": true,
+    "message": "Policy retrieved successfully",
+    "errorCode": null,
+    "durationMs": 949,
+    "data": {
+        "policyId": "MCAQ002864",
+        "policyNumber": "MCAQ002864",
+        "quoteNumber": "",
+        "transactionCode": "10",
+        "status": "PEND",
+        "productCode": "MCA",
+        "sourceSystem": "DB2",
+        "recordVersion": "TR30",
+        "term": {
+            "effectiveDate": "2024-08-01",
+            "expirationDate": "2025-08-01"
+        },
+        "insured": {
+            "namedInsured": "THOMAS H CRAIG",
+            "businessType": "IN",
+            "licenseNumber": "1"
+        },
+        "contact": {
+            "phones": [
+                {
+                    "phoneType": "BUSINESS",
+                    "phoneNumber": "3773737375",
+                    "isPrimary": true
+                }
+            ],
+            "email": null,
+            "mailingAddress": {
+                "line1": "92 SILVER ST",
+                "line2": "",
+                "city": "SOUTH HADLEY",
+                "state": "MA",
+                "postalCode": "010751618",
+                "country": "US"
+            }
+        },
+        "policyOptions": {
+            "nonOwnedVehicle": true,
+            "hiredVehicle": true,
+            "driveOtherCar": false
+        },
+        "vehicles": [
+            {
+                "vehicleId": "JALB4B1K7R7002291",
+                "locnum": "001",
+                "year": 1994,
+                "make": "ISU NPR",
+                "model": "PU",
+                "vin": "JALB4B1K7R7002291",
+                "plateNumber": "X89522",
+                "useClass": "P",
+                "radius": "",
+                "garaging": {
+                    "zipCode": "01075",
+                    "city": "SOUTH HADLEY",
+                    "state": null
+                },
+                "coverages": [
+                    {
+                        "code": "0",
+                        "limit": "",
+                        "deductible": 500
+                    }
+                ],
+                "lossPayees": null
+            },
+            {
+                "vehicleId": "N/A",
+                "locnum": "501",
+                "year": 2024,
+                "make": "NONOWN-EMPL",
+                "model": "PU",
+                "vin": "N/A",
+                "plateNumber": "NOPLATE",
+                "useClass": "P",
+                "radius": "",
+                "garaging": {
+                    "zipCode": "",
+                    "city": "",
+                    "state": null
+                },
+                "coverages": [
+                    {
+                        "code": "0",
+                        "limit": "",
+                        "deductible": 0
+                    }
+                ],
+                "lossPayees": null
+            },
+            {
+                "vehicleId": "N/A",
+                "locnum": "503",
+                "year": 2024,
+                "make": "HIRED CAR",
+                "model": "PU",
+                "vin": "N/A",
+                "plateNumber": "NOPLATE",
+                "useClass": "P",
+                "radius": "",
+                "garaging": {
+                    "zipCode": "",
+                    "city": "",
+                    "state": null
+                },
+                "coverages": [
+                    {
+                        "code": "0",
+                        "limit": "",
+                        "deductible": 0
+                    }
+                ],
+                "lossPayees": null
+            }
         ],
-        "email": null,
-        "mailingAddress": {
-          "line1": "92 SILVER ST",
-          "line2": "",
-          "city": "SOUTH HADLEY",
-          "state": "MA",
-          "postalCode": "010751618",
-          "country": "US"
-        }
-      },
-      "policyOptions": {
-        "nonOwnedVehicle": true,
-        "hiredVehicle": true,
-        "driveOtherCar": false
-      },
-      "vehicles": [
-        {
-          "vehicleId": "JALB4B1K7R7002291",
-          "locnum": "001",
-          "year": 1994,
-          "make": "",
-          "model": "",
-          "vin": "JALB4B1K7R7002291",
-          "plateNumber": "X89522",
-          "useClass": "P",
-          "radius": "",
-          "garaging": {
-            "zipCode": "01075",
-            "city": "SOUTH HADLEY",
-            "state": null
-          },
-          "coverages": [
+        "drivers": [
             {
-              "code": "0",
-              "limit": "",
-              "deductible": 500
+                "driverId": "001",
+                "drvnum": "001",
+                "firstName": "DANIELLE",
+                "lastName": "GIRARD",
+                "dateOfBirth": "1981-06-16",
+                "licenseNumber": "S18945728",
+                "licenseState": "MA",
+                "licenseClass": "",
+                "sdipStep": 99,
+                "assignedVehicleIds": []
             }
-          ],
-          "lossPayees": null
+        ],
+        "coverages": null,
+        "coverageIndicators": {
+            "nonOwnedAuto": "Y",
+            "hiredAuto": "Y",
+            "driveOtherCar": "N",
+            "fleetStatus": "N"
         },
-        {
-          "vehicleId": "N/A",
-          "locnum": "501",
-          "year": 2024,
-          "make": "",
-          "model": "",
-          "vin": "N/A",
-          "plateNumber": "NOPLATE",
-          "useClass": "P",
-          "radius": "",
-          "garaging": {
-            "zipCode": "",
-            "city": "",
-            "state": null
-          },
-          "coverages": [
-            {
-              "code": "0",
-              "limit": "",
-              "deductible": 0
-            }
-          ],
-          "lossPayees": null
+        "rating": {
+            "lastCalculatedAt": "2026-05-07T06:33:13Z",
+            "totalPremium": 2303.00,
+            "currency": "USD",
+            "irpm": null,
+            "statisticalSummary": null
         },
-        {
-          "vehicleId": "N/A",
-          "locnum": "503",
-          "year": 2024,
-          "make": "",
-          "model": "",
-          "vin": "N/A",
-          "plateNumber": "NOPLATE",
-          "useClass": "P",
-          "radius": "",
-          "garaging": {
-            "zipCode": "",
-            "city": "",
-            "state": null
-          },
-          "coverages": [
-            {
-              "code": "0",
-              "limit": "",
-              "deductible": 0
-            }
-          ],
-          "lossPayees": null
-        }
-      ],
-      "drivers": [
-        {
-          "driverId": "001",
-          "drvnum": "001",
-          "firstName": "DANIELLE",
-          "lastName": "GIRARD",
-          "dateOfBirth": "1981-06-16",
-          "licenseNumber": "S18945728",
-          "licenseState": "MA",
-          "licenseClass": "",
-          "sdipStep": 99,
-          "assignedVehicleIds": []
-        }
-      ],
-      "coverages": null,
-      "rating": {
-        "lastCalculatedAt": "2026-05-06T12:02:25Z",
-        "totalPremium": 2303,
-        "currency": "USD",
-        "irpm": null,
-        "statisticalSummary": null
-      },
-      "questionnaire": null,
-      "messages": []
-    },
-    "missingOrNotProvidedByApi": {
-      "insuredContactName": null,
-      "relatedPolicy": null,
-      "accountCredit": null,
-      "autoPlusEndorsement": null,
-      "additionalNames": [],
-      "uwQuestionnaireSource": null
+        "questionnaire": null,
+        "underwriterQuestions": {
+            "hazardousMaterialsTransport": "Y",
+            "validFeinFid": "Y",
+            "snowRemovalForFee": "N",
+            "iccPucFilings": "Y"
+        },
+        "messages": []
     }
-  }
+}
