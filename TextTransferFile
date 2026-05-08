@@ -1,158 +1,180 @@
-{
-    "success": true,
-    "message": "Policy retrieved successfully",
-    "errorCode": null,
-    "durationMs": 949,
-    "data": {
-        "policyId": "MCAQ002864",
-        "policyNumber": "MCAQ002864",
-        "quoteNumber": "",
-        "transactionCode": "10",
-        "status": "PEND",
-        "productCode": "MCA",
-        "sourceSystem": "DB2",
-        "recordVersion": "TR30",
-        "term": {
-            "effectiveDate": "2024-08-01",
-            "expirationDate": "2025-08-01"
+curl -X 'POST' \
+  'http://10.1.29.32/api/v3/policy/SavePolicyInfo' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  
+    "policyId": "MCAQ002865",
+    "policyNumber": "MCAQ002865",
+    "quoteNumber": "",
+    "transactionCode": "10",
+    "status": "PEND",
+    "productCode": "MCA",
+    "sourceSystem": "DB2",
+    "recordVersion": "KM06",
+    "term": {
+      "effectiveDate": "2024-08-01",
+      "expirationDate": "2025-08-01"
+    },
+    "insured": {
+      "namedInsured": "JUSTIN A MADDALENA",
+      "businessType": "IN",
+      "licenseNumber": "S16374798"
+    },
+    "contact": {
+      "phones": [
+        {
+          "phoneType": "BUSINESS",
+          "phoneNumber": "",
+          "isPrimary": true
+        }
+      ],
+      "email": "TEST1@MCA.COM",
+      "mailingAddress": {
+        "line1": "621 HILL ST",
+        "line2": "TEST 100",
+        "city": "RAYNHAM",
+        "state": "MA",
+        "postalCode": "027671054",
+        "country": "US"
+      }
+    },
+    "policyOptions": {
+      "nonOwnedVehicle": true,
+      "hiredVehicle": true,
+      "driveOtherCar": false
+    },
+    "vehicles": [
+      {
+        "vehicleId": "1GD322CL1BF178164",
+        "locnum": "001",
+        "year": 2011,
+        "make": "GMC 3500",
+        "model": "PU",
+        "vin": "1GD322CL1BF178164",
+        "plateNumber": "2ZDF85",
+        "garaging": {
+          "zipCode": "02767",
+          "city": "RAYNHAM",
+          "state": null
         },
-        "insured": {
-            "namedInsured": "THOMAS H CRAIG",
-            "businessType": "IN",
-            "licenseNumber": "1"
-        },
-        "contact": {
-            "phones": [
-                {
-                    "phoneType": "BUSINESS",
-                    "phoneNumber": "3773737375",
-                    "isPrimary": true
-                }
-            ],
-            "email": null,
-            "mailingAddress": {
-                "line1": "92 SILVER ST",
-                "line2": "",
-                "city": "SOUTH HADLEY",
-                "state": "MA",
-                "postalCode": "010751618",
-                "country": "US"
-            }
-        },
-        "policyOptions": {
-            "nonOwnedVehicle": true,
-            "hiredVehicle": true,
-            "driveOtherCar": false
-        },
-        "vehicles": [
-            {
-                "vehicleId": "JALB4B1K7R7002291",
-                "locnum": "001",
-                "year": 1994,
-                "make": "ISU NPR",
-                "model": "PU",
-                "vin": "JALB4B1K7R7002291",
-                "plateNumber": "X89522",
-                "useClass": "P",
-                "radius": "",
-                "garaging": {
-                    "zipCode": "01075",
-                    "city": "SOUTH HADLEY",
-                    "state": null
-                },
-                "coverages": [
-                    {
-                        "code": "0",
-                        "limit": "",
-                        "deductible": 500
-                    }
-                ],
-                "lossPayees": null
-            },
-            {
-                "vehicleId": "N/A",
-                "locnum": "501",
-                "year": 2024,
-                "make": "NONOWN-EMPL",
-                "model": "PU",
-                "vin": "N/A",
-                "plateNumber": "NOPLATE",
-                "useClass": "P",
-                "radius": "",
-                "garaging": {
-                    "zipCode": "",
-                    "city": "",
-                    "state": null
-                },
-                "coverages": [
-                    {
-                        "code": "0",
-                        "limit": "",
-                        "deductible": 0
-                    }
-                ],
-                "lossPayees": null
-            },
-            {
-                "vehicleId": "N/A",
-                "locnum": "503",
-                "year": 2024,
-                "make": "HIRED CAR",
-                "model": "PU",
-                "vin": "N/A",
-                "plateNumber": "NOPLATE",
-                "useClass": "P",
-                "radius": "",
-                "garaging": {
-                    "zipCode": "",
-                    "city": "",
-                    "state": null
-                },
-                "coverages": [
-                    {
-                        "code": "0",
-                        "limit": "",
-                        "deductible": 0
-                    }
-                ],
-                "lossPayees": null
-            }
+        "useClass": "P",
+        "radius": "",
+        "coverages": [
+          {
+            "code": "0",
+            "limit": "",
+            "deductible": 500
+          }
         ],
-        "drivers": [
-            {
-                "driverId": "001",
-                "drvnum": "001",
-                "firstName": "DANIELLE",
-                "lastName": "GIRARD",
-                "dateOfBirth": "1981-06-16",
-                "licenseNumber": "S18945728",
-                "licenseState": "MA",
-                "licenseClass": "",
-                "sdipStep": 99,
-                "assignedVehicleIds": []
-            }
+        "lossPayees": null
+      },
+      {
+        "vehicleId": "1C4HJXEG3JW115592",
+        "locnum": "002",
+        "year": 2018,
+        "make": "JEEP WRANGL",
+        "model": "PP",
+        "vin": "1C4HJXEG3JW115592",
+        "plateNumber": "IC23PL",
+        "garaging": {
+          "zipCode": "02339",
+          "city": "HANOVER",
+          "state": null
+        },
+        "useClass": "P",
+        "radius": "",
+        "coverages": [
+          {
+            "code": "0",
+            "limit": "",
+            "deductible": 500
+          }
         ],
-        "coverages": null,
-        "coverageIndicators": {
-            "nonOwnedAuto": "Y",
-            "hiredAuto": "Y",
-            "driveOtherCar": "N",
-            "fleetStatus": "N"
+        "lossPayees": null
+      },
+      {
+        "vehicleId": "N/A",
+        "locnum": "501",
+        "year": 2024,
+        "make": "NONOWN-EMPL",
+        "model": "PU",
+        "vin": "N/A",
+        "plateNumber": "NOPLATE",
+        "garaging": {
+          "zipCode": "",
+          "city": "",
+          "state": null
         },
-        "rating": {
-            "lastCalculatedAt": "2026-05-07T06:33:13Z",
-            "totalPremium": 2303.00,
-            "currency": "USD",
-            "irpm": null,
-            "statisticalSummary": null
+        "useClass": "P",
+        "radius": "",
+        "coverages": [
+          {
+            "code": "0",
+            "limit": "",
+            "deductible": 0
+          }
+        ],
+        "lossPayees": null
+      },
+      {
+        "vehicleId": "N/A",
+        "locnum": "503",
+        "year": 2024,
+        "make": "HIRED CAR",
+        "model": "PU",
+        "vin": "N/A",
+        "plateNumber": "NOPLATE",
+        "garaging": {
+          "zipCode": "",
+          "city": "",
+          "state": null
         },
-        "questionnaire": null,
-        "underwriterQuestions": {
-            "hazardousMaterialsTransport": "Y",
-            "validFeinFid": "Y",
-            "snowRemovalForFee": "N",
-            "iccPucFilings": "Y"
-        },
-        "messages": []
+        "useClass": "P",
+        "radius": "",
+        "coverages": [
+          {
+            "code": "0",
+            "limit": "",
+            "deductible": 0
+          }
+        ],
+        "lossPayees": null
+      }
+    ],
+    "drivers": [
+      {
+        "driverId": "001",
+        "drvnum": "001",
+        "firstName": "BRENDAN",
+        "lastName": "MCNEISH",
+        "dateOfBirth": "1990-07-17",
+        "licenseNumber": "S40440542",
+        "licenseState": "MA",
+        "licenseClass": "",
+        "sdipStep": 99,
+        "assignedVehicleIds": []
+      }
+    ],
+    "coverages": null,
+    "coverageIndicators": {
+      "nonOwnedAuto": "Y",
+      "hiredAuto": "Y",
+      "driveOtherCar": "N",
+      "fleetStatus": "Y"
+    },
+    "rating": {
+      "lastCalculatedAt": "2026-05-08T10:11:29Z",
+      "totalPremium": 3867,
+      "currency": "USD",
+      "irpm": null,
+      "statisticalSummary": null
+    },
+    "questionnaire": null,
+    "underwriterQuestions": {
+      "hazardousMaterialsTransport": "N",
+      "validFeinFid": "Y",
+      "snowRemovalForFee": "N",
+      "iccPucFilings": "Y"
     }
-}
+}'
