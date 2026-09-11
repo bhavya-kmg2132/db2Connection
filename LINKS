@@ -10,3 +10,8 @@ https://qol2.qmfi.com/POC_cc
 
 http://10.1.29.32:85/POC13/QuincyApi/api/v1/Heartbeat
 
+
+
+http://10.1.29.32:85/POC13/gateway/api/v1/policy/GetNotepads/1234
+
+
