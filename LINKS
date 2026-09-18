@@ -18,3 +18,12 @@ http://10.1.29.32:85/QuincyApi/api/v1/MCAPolicy/GetQuoteNumber
 https://dev.azure.com/QuincyMutualGroup/QOL2.0/_backlogs/backlog/QOL2.0-MCA/Stories
 
 
+
+Invalid column name 'GeoScopeNodeId'.
+Invalid column name 'OrgScopeNodeId'.
+Invalid column name 'IsDualAuthEnabled'.
+Invalid column name 'DualFactorType'.
+Invalid column name 'OTPChannel'.'
+
+
+
